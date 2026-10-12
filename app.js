@@ -68,7 +68,7 @@ function makePins(){
       label:{text:p.name+(p.bourdain?'  ·AB':''),font:'500 13px "Zen Kaku Gothic New",system-ui,sans-serif',fillColor:Cesium.Color.WHITE,
         showBackground:true,backgroundColor:Cesium.Color.fromCssColorString('rgba(7,11,23,.78)'),backgroundPadding:new Cesium.Cartesian2(6,3),
         verticalOrigin:Cesium.VerticalOrigin.TOP,pixelOffset:new Cesium.Cartesian2(0,4),heightReference:Cesium.HeightReference.CLAMP_TO_GROUND,
-        disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,p.layer==='series'?900000:180000)}
+        disableDepthTestDistance:Number.POSITIVE_INFINITY,distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,p.layer==='series'?900000:p.layer==='autumn'?120000:30000)}
     });ents.set(p.id,{e,p})});
   refreshPins();
 }
@@ -91,8 +91,8 @@ function flyTo(o,dur,done){
     duration:dur,complete:done,easingFunction:Cesium.EasingFunction.QUADRATIC_IN_OUT});
 }
 function flyToPlace(p,close){
-  const range=close?1100:(p.layer==='autumn'?60000:p.layer==='outdoors'?14000:5200);
-  const pitch=close?-24:-38,hd=Cesium.Math.toDegrees(camera.heading);
+  const range=close?650:(p.layer==='autumn'?60000:p.layer==='outdoors'?14000:5200);
+  const pitch=close?-20:-38,hd=Cesium.Math.toDegrees(camera.heading);
   camera.flyToBoundingSphere(new Cesium.BoundingSphere(Cesium.Cartesian3.fromDegrees(p.lon,p.lat,close?40:0),10),
     {offset:new Cesium.HeadingPitchRange(Cesium.Math.toRadians(hd),Cesium.Math.toRadians(pitch),range),duration:close?2.2:undefined});
 }
@@ -109,7 +109,7 @@ function pickCenter(){const w=scene.canvas.clientWidth,h=scene.canvas.clientHeig
   if(!c){const ray=camera.getPickRay(pt);c=scene.globe.pick(ray,scene)||Cesium.IntersectionTests.rayEllipsoid(ray,Cesium.Ellipsoid.WGS84)&&Cesium.Ray.getPoint(ray,Cesium.IntersectionTests.rayEllipsoid(ray,Cesium.Ellipsoid.WGS84).start)}
   return c}
 scene.postRender.addEventListener(()=>{const c=camera.positionCartographic,alt=c.height/1000;
-  $('#hud').textContent=`${Math.abs(Cesium.Math.toDegrees(c.latitude)).toFixed(2)}°N ${Math.abs(Cesium.Math.toDegrees(c.longitude)).toFixed(2)}°E · eye ${alt<10?alt.toFixed(2):Math.round(alt).toLocaleString('en-US')} km`;
+  const la=Cesium.Math.toDegrees(c.latitude),lo=Cesium.Math.toDegrees(c.longitude);$('#hud').textContent=`${Math.abs(la).toFixed(2)}°${la>=0?'N':'S'} ${Math.abs(lo).toFixed(2)}°${lo>=0?'E':'W'} · eye ${alt<10?alt.toFixed(2):Math.round(alt).toLocaleString('en-US')} km`;
   $('#compass svg').style.transform=`rotate(${-Cesium.Math.toDegrees(camera.heading)}deg)`;
   $('#tiltbtn').classList.toggle('on',camera.pitch>Cesium.Math.toRadians(-70))});
 
